@@ -9,11 +9,11 @@ namespace LavaFlow
 {
     public static class AppSettings
     {
-        public static int ManagementPort
+        public static int Port
         {
             get
             {
-                return int.Parse(ConfigurationManager.AppSettings["ManagementPort"]);
+                return int.Parse(ConfigurationManager.AppSettings["Port"]);
             }
         }
     }

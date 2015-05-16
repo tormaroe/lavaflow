@@ -13,26 +13,30 @@ namespace LavaFlow
     {
         private static readonly LogWriter Logger = HostLogger.Get(typeof(Daemon));
 
-        public void Start()
+        private void LogHeader()
         {
             Logger.InfoFormat(@"
 
                    xl""``""lx
                   X8X::::xxX8X
                   8X8::X8bd8X8               LAVAFLOW SERVER v{0}
-                 dX8::::XbdX8Xb              Copyright (c) 2015 Torbjørn Marø
-                dX8::d8::XbdX8Xb             Licensed under The MIT License
-               dX8::d8X8::XbdX8Xb
-             .dX:::d8X8X8:::bdX8Xb.          Admin URL: http://localhost:{1}/admin
-           .d8:::b:::8X8X::::bdX8X8b.
+                 dX8::::XbdX8Xb              
+                dX8::d8::XbdX8Xb             Copyright (c) 2015 Torbjørn Marø
+               dX8::d8X8::XbdX8Xb            Licensed under The MIT License
+             .dX:::d8X8X8:::bdX8Xb.          
+           .d8:::b:::8X8X::::bdX8X8b.        Admin URL: http://localhost:{1}/admin
        _.-dX8:::bd8::X8X::8X::dbX8X8Xb-._
     .-d8X8X::8bdX:::X8X::8X8X::8db8X8X8X8b-.
  .-d8X8X8::::bdX8X:::8X8::X8X8::X8db8X8X8-RG-b-.
 
-", 
+",
                 Assembly.GetExecutingAssembly().GetName().Version,
-                AppSettings.ManagementPort);
+                AppSettings.Port);
+        }
 
+        public void Start()
+        {
+            LogHeader();
             Logger.Info("Lava now flowing!");
         }
 

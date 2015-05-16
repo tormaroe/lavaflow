@@ -27,7 +27,7 @@ namespace LavaFlow
 
                     s.WithNancyEndpoint(x, c =>
                     {
-                        c.AddHost(port: AppSettings.ManagementPort);
+                        c.AddHost(port: AppSettings.Port);
                         c.ConfigureNancy(nc => nc.UrlReservations.CreateAutomatically = true);
                         c.CreateUrlReservationsOnInstall();
                     });
