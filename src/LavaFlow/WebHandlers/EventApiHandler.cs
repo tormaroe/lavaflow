@@ -52,17 +52,9 @@ namespace LavaFlow.WebHandlers
                     AggregateKey = p.key,
                 }), "text/plain");
 
-            Get["/"] = _ =>
-                Response.AsJson(
-                    new DirectoryInfo(AppSettings.DataPath)
-                        .GetDirectories()
-                        .Select(di => di.Name));
+            Get["/"] = _ => Response.AsJson(storage.GetAllAggregates());
 
-            Get["/{aggregate}"] = p =>
-                Response.AsJson(
-                    new DirectoryInfo(Path.Combine(AppSettings.DataPath, p.aggregate))
-                        .GetFiles("*.events", SearchOption.AllDirectories)
-                        .Select(di => Path.GetFileNameWithoutExtension(di.Name)));
+            Get["/{aggregate}"] = p => Response.AsJson(storage.GetKeys((string) p.aggregate));
         }
 
         private string GetEventData(Stream stream)

@@ -52,6 +52,20 @@ namespace LavaFlow.Storage
             return () => File.OpenRead(filePath);
         }
 
+        public IEnumerable<string> GetAllAggregates()
+        {
+            return new DirectoryInfo(AppSettings.DataPath)
+                .GetDirectories()
+                .Select(di => di.Name);
+        }
+
+        public IEnumerable<string> GetKeys(string aggregate)
+        {
+            return new DirectoryInfo(Path.Combine(AppSettings.DataPath, aggregate))
+                .GetFiles("*.events", SearchOption.AllDirectories)
+                .Select(di => Path.GetFileNameWithoutExtension(di.Name));
+        }
+
         public void ProcessEvents()
         {
             Logger.Info("Storage actor started");
