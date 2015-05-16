@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Topshelf;
 using Topshelf.Ninject;
 using Topshelf.Nancy;
+using Topshelf.Logging;
 
 namespace LavaFlow
 {
@@ -15,8 +16,7 @@ namespace LavaFlow
         {
             HostFactory.Run(x =>
             {
-                // TODO: log4net
-
+                x.UseLog4Net("log4net.config", watchFile: true);
                 x.UseNinject(new Dependencies());
 
                 x.Service<Daemon>(s =>
@@ -34,10 +34,20 @@ namespace LavaFlow
                 });
 
                 x.RunAsNetworkService();
+                x.StartAutomatically();
 
                 x.SetDescription("Event sourcing database service");
                 x.SetDisplayName("LavaFlow");
                 x.SetServiceName("lavaflow");
+
+                x.EnableServiceRecovery(r =>
+                {
+                    r.RestartService(delayInMinutes: 0);
+                    r.RestartService(delayInMinutes: 0);
+                    r.RestartService(delayInMinutes: 1);
+
+                    r.SetResetPeriod(days: 1);
+                });
             });
         }
     }
