@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Nancy;
 using Topshelf.Logging;
 using LavaFlow.Storage;
+using LavaFlow.Model;
 
 namespace LavaFlow.WebHandlers
 {
@@ -22,7 +23,7 @@ namespace LavaFlow.WebHandlers
             Post["/{aggregate}/{key}/event"] = p =>
             {
                 Logger.InfoFormat("POST {0}", Request.Path);
-                storage.Add(new Model.PersistEvent
+                storage.Add(new PersistEvent
                 {
                     AggregateType = p.aggregate,
                     AggregateKey = p.key,
@@ -35,16 +36,11 @@ namespace LavaFlow.WebHandlers
             {
                 Logger.InfoFormat("GET {0}", Request.Path);
 
-                var filePath = StoragePath.Get(new Model.PersistEvent
+                return Response.FromStream(storage.GetEventStream(new PersistEvent
                 {
                     AggregateType = p.aggregate,
                     AggregateKey = p.key,
-                });
-
-                string filename = p.key + ".events";
-                var fileStream = System.IO.File.OpenRead(System.IO.Path.Combine(filePath, filename));
-
-                return Response.FromStream(fileStream, "text/plain");
+                }), "text/plain");
             };
         }
 

@@ -44,6 +44,13 @@ namespace LavaFlow.Storage
             }
         }
 
+        public Func<Stream> GetEventStream(PersistEvent @event)
+        {
+            var filePath = Path.Combine(StoragePath.Get(@event), @event.Filename);
+            Logger.DebugFormat("Preparing stream from {0}", filePath);
+            return () => File.OpenRead(filePath);
+        }
+
         public void ProcessEvents()
         {
             Logger.Info("Storage actor starting");
@@ -53,8 +60,7 @@ namespace LavaFlow.Storage
                 {
                     var eventToPersist = _persistQueue.Take(); // Blocks if no items to take
                     var path = StoragePath.Get(eventToPersist);
-                    var filename = eventToPersist.AggregateKey + ".events";
-                    var filepath = Path.Combine(path, filename);
+                    var filepath = Path.Combine(path, eventToPersist.Filename);
                     Logger.DebugFormat("Storing <{0}:{1}> length={2} path={3}",
                         eventToPersist.AggregateType,
                         eventToPersist.AggregateKey,

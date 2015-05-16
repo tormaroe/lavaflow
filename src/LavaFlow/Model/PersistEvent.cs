@@ -11,5 +11,13 @@ namespace LavaFlow.Model
         public string AggregateType { get; set; }
         public string AggregateKey { get; set; }
         public string EventData { get; set; }
+
+        public string Filename
+        {
+            get
+            {
+                return AggregateKey + ".events";
+            }
+        }
     }
 }
