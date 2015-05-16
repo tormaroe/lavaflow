@@ -14,6 +14,7 @@ namespace LavaFlow.Storage
     {
         private static readonly LogWriter Logger = HostLogger.Get(typeof(StorageActor));
         private readonly BlockingCollection<PersistEvent> _persistQueue;
+        private bool _stopped = false;
 
         public StorageActor(int capacity)
         {
@@ -24,11 +25,28 @@ namespace LavaFlow.Storage
 
         public void Add(PersistEvent item)
         {
+            if (_stopped)
+                throw new InvalidOperationException("Storage agent is shutting down, can't accept any more events.");
+
             _persistQueue.Add(item);
+        }
+
+        public void PrepareForShutdown()
+        {
+            _stopped = true;
+        }
+
+        public int QueueLength
+        {
+            get
+            {
+                return _persistQueue.Count;
+            }
         }
 
         public void ProcessEvents()
         {
+            Logger.Info("Storage actor starting");
             while (true)
             {
                 try

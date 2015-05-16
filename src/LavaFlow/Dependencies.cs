@@ -11,9 +11,12 @@ namespace LavaFlow
 {
     public class Dependencies : NinjectModule
     {
+        public static StorageActor storageActor = new StorageActor(capacity: AppSettings.StorageQueueLimit);
+
         public override void Load()
         {
             // this.Bind<IWeapon>().To<Sword>();
+            this.Bind<StorageActor>().ToConstant(storageActor);
         }
     }
 
@@ -22,7 +25,7 @@ namespace LavaFlow
         protected override void ConfigureApplicationContainer(Nancy.TinyIoc.TinyIoCContainer container)
         {
             base.ConfigureApplicationContainer(container);
-            container.Register<StorageActor>(new StorageActor(capacity: AppSettings.StorageQueueLimit));
+            container.Register<StorageActor>(Dependencies.storageActor);
         }
     }
 }

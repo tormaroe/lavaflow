@@ -1,9 +1,11 @@
-﻿using Nancy.Hosting.Self;
+﻿using LavaFlow.Storage;
+using Nancy.Hosting.Self;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Topshelf.Logging;
 
@@ -12,6 +14,13 @@ namespace LavaFlow
     public class Daemon
     {
         private static readonly LogWriter Logger = HostLogger.Get(typeof(Daemon));
+
+        private StorageActor _storage;
+
+        public Daemon(StorageActor storage)
+        {
+            _storage = storage;
+        }
 
         private void LogHeader()
         {
@@ -29,12 +38,14 @@ namespace LavaFlow
     .-d8X8X::8bdX:::X8X::8X8X::8db8X8X8X8b-.
  .-d8X8X8::::bdX8X:::8X8::X8X8::X8db8X8X8-RG-b-.
 
+         Port              :  {1}
+         DataPath          :  {2}
+         StorageQueueLimit :  {3}
 ",
                 Assembly.GetExecutingAssembly().GetName().Version,
-                AppSettings.Port);
-
-            Logger.InfoFormat("[AppSettigs] DataPath          = {0}", AppSettings.DataPath);
-            Logger.InfoFormat("[AppSettigs] StorageQueueLimit = {0}", AppSettings.StorageQueueLimit);
+                AppSettings.Port,
+                AppSettings.DataPath,
+                AppSettings.StorageQueueLimit);
         }
 
         public void Start()
@@ -45,6 +56,26 @@ namespace LavaFlow
 
         public void Stop()
         {
+            int waitedSoFar = 0;
+            const int waitInterval = 1000; 
+            const int maxWait = 30000;
+            while (waitedSoFar < maxWait)
+            {
+                int queueLength = _storage.QueueLength;
+                if (_storage.QueueLength == 0)
+                {
+                    Logger.Info("Storage queue empty");
+                    break;
+                }
+
+                Logger.WarnFormat(
+                    "{0} events in storage queue, aborting in {2}",
+                    (maxWait - waitedSoFar) / 1000);
+
+                Thread.Sleep(waitInterval);
+                waitedSoFar += waitInterval;
+            }
+
             Logger.Info("Lava flow stopped!");
         }
     }
