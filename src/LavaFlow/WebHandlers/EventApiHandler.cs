@@ -30,6 +30,22 @@ namespace LavaFlow.WebHandlers
                 });
                 return 201;
             };
+
+            Get["/{aggregate}/{key}"] = p =>
+            {
+                Logger.InfoFormat("GET {0}", Request.Path);
+
+                var filePath = StoragePath.Get(new Model.PersistEvent
+                {
+                    AggregateType = p.aggregate,
+                    AggregateKey = p.key,
+                });
+
+                string filename = p.key + ".events";
+                var fileStream = System.IO.File.OpenRead(System.IO.Path.Combine(filePath, filename));
+
+                return Response.FromStream(fileStream, "text/plain");
+            };
         }
 
         private string GetEventData(Stream stream)
