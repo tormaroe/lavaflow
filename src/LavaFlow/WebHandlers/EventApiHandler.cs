@@ -16,13 +16,26 @@ namespace LavaFlow.WebHandlers
         private static readonly LogWriter Logger = HostLogger.Get(typeof(EventApiHandler));
         private readonly StorageActor _storage;
 
-        public EventApiHandler(StorageActor storage)
+        public EventApiHandler(StorageActor storage) : base("events")
         {
             _storage = storage;
 
-            Post["/{aggregate}/{key}/event"] = p =>
+            base.Before.AddItemToEndOfPipeline(context =>
             {
-                Logger.InfoFormat("POST {0}", Request.Path);
+                Logger.InfoFormat("{0} {1}",
+                    context.Request.Method,
+                    context.Request.Path);
+                return null;
+            });
+
+            base.After.AddItemToEndOfPipeline(context =>
+            {
+                Logger.DebugFormat(" ==> {0}", 
+                    context.Response.StatusCode);
+            });
+
+            Post["/{aggregate}/{key}"] = p =>
+            {
                 storage.Add(new PersistEvent
                 {
                     AggregateType = p.aggregate,
@@ -33,15 +46,23 @@ namespace LavaFlow.WebHandlers
             };
 
             Get["/{aggregate}/{key}"] = p =>
-            {
-                Logger.InfoFormat("GET {0}", Request.Path);
-
-                return Response.FromStream(storage.GetEventStream(new PersistEvent
+                Response.FromStream(storage.GetEventStream(new PersistEvent
                 {
                     AggregateType = p.aggregate,
                     AggregateKey = p.key,
                 }), "text/plain");
-            };
+
+            Get["/"] = _ =>
+                Response.AsJson(
+                    new DirectoryInfo(AppSettings.DataPath)
+                        .GetDirectories()
+                        .Select(di => di.Name));
+
+            Get["/{aggregate}"] = p =>
+                Response.AsJson(
+                    new DirectoryInfo(Path.Combine(AppSettings.DataPath, p.aggregate))
+                        .GetFiles("*.events", SearchOption.AllDirectories)
+                        .Select(di => Path.GetFileNameWithoutExtension(di.Name)));
         }
 
         private string GetEventData(Stream stream)
@@ -49,7 +70,7 @@ namespace LavaFlow.WebHandlers
             using (var reader = new StreamReader(stream))
                 return reader
                     .ReadToEnd()
-                    .Replace(Environment.NewLine, " ");
+                    .Replace("\n", " ");
         }
     }
 }

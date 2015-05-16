@@ -20,6 +20,7 @@ namespace LavaFlow.Storage
         {
             _persistQueue = new BlockingCollection<PersistEvent>(boundedCapacity: capacity);
 
+            Logger.Info("Storage actor starting");
             Task.Factory.StartNew(ProcessEvents);
         }
 
@@ -53,7 +54,7 @@ namespace LavaFlow.Storage
 
         public void ProcessEvents()
         {
-            Logger.Info("Storage actor starting");
+            Logger.Info("Storage actor started");
             while (true)
             {
                 try
