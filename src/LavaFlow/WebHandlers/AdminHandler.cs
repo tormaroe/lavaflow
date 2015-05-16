@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Nancy;
 
-namespace LavaFlow.Management
+namespace LavaFlow.WebHandlers
 {
-    public class Api : NancyModule
+    public class AdminHandler : NancyModule
     {
-        public Api() : base("admin")
+        public AdminHandler() : base("admin")
         {
             Get["/status"] = _ => "I am alive!";
         }

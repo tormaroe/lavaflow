@@ -32,6 +32,9 @@ namespace LavaFlow
 ",
                 Assembly.GetExecutingAssembly().GetName().Version,
                 AppSettings.Port);
+
+            Logger.InfoFormat("[AppSettigs] DataPath          = {0}", AppSettings.DataPath);
+            Logger.InfoFormat("[AppSettigs] StorageQueueLimit = {0}", AppSettings.StorageQueueLimit);
         }
 
         public void Start()
