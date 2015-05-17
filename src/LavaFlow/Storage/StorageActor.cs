@@ -45,27 +45,6 @@ namespace LavaFlow.Storage
             }
         }
 
-        public Func<Stream> GetEventStream(PersistEvent @event)
-        {
-            var filePath = Path.Combine(StoragePath.Get(@event), @event.Filename);
-            Logger.DebugFormat("Preparing stream from {0}", filePath);
-            return () => File.OpenRead(filePath);
-        }
-
-        public IEnumerable<string> GetAllAggregates()
-        {
-            return new DirectoryInfo(AppSettings.DataPath)
-                .GetDirectories()
-                .Select(di => di.Name);
-        }
-
-        public IEnumerable<string> GetKeys(string aggregate)
-        {
-            return new DirectoryInfo(Path.Combine(AppSettings.DataPath, aggregate))
-                .GetFiles("*.events", SearchOption.AllDirectories)
-                .Select(di => Path.GetFileNameWithoutExtension(di.Name));
-        }
-
         public void ProcessEvents()
         {
             Logger.Info("Storage actor started");
@@ -76,7 +55,7 @@ namespace LavaFlow.Storage
                     var eventToPersist = _persistQueue.Take(); // Blocks if no items to take
                     var path = StoragePath.Get(eventToPersist);
                     var filepath = Path.Combine(path, eventToPersist.Filename);
-                    Logger.DebugFormat("Storing <{0}:{1}> length={2} path={3}",
+                    Logger.DebugFormat("Storing event to <{0}:{1}> length={2}",
                         eventToPersist.AggregateType,
                         eventToPersist.AggregateKey,
                         eventToPersist.EventData.Length,
@@ -89,7 +68,7 @@ namespace LavaFlow.Storage
                             Directory.CreateDirectory(path);
                         }
 
-                        File.AppendAllText(filepath, eventToPersist.EventData + Environment.NewLine);
+                        File.AppendAllText(filepath, eventToPersist.EventData + DB.NewLine);
                     }
                     catch (Exception ex)
                     {

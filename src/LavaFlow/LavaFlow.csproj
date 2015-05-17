@@ -43,9 +43,6 @@
     <Reference Include="Nancy.Hosting.Self">
       <HintPath>..\packages\Nancy.Hosting.Self.1.2.0\lib\net40\Nancy.Hosting.Self.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="Ninject">
       <HintPath>..\packages\Ninject.3.0.1.10\lib\net45-full\Ninject.dll</HintPath>
     </Reference>
@@ -75,6 +72,7 @@
     <Compile Include="Daemon.cs" />
     <Compile Include="Dependencies.cs" />
     <Compile Include="Model\PersistEvent.cs" />
+    <Compile Include="Storage\DB.cs" />
     <Compile Include="Storage\StorageActor.cs" />
     <Compile Include="Storage\StoragePath.cs" />
     <Compile Include="WebHandlers\AdminHandler.cs" />

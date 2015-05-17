@@ -46,15 +46,15 @@ namespace LavaFlow.WebHandlers
             };
 
             Get["/{aggregate}/{key}"] = p =>
-                Response.FromStream(storage.GetEventStream(new PersistEvent
+                Response.FromStream(DB.GetEventStream(new PersistEvent
                 {
                     AggregateType = p.aggregate,
                     AggregateKey = p.key,
                 }), "text/plain");
 
-            Get["/"] = _ => Response.AsJson(storage.GetAllAggregates());
+            Get["/"] = _ => Response.AsJson(DB.GetAllAggregates());
 
-            Get["/{aggregate}"] = p => Response.AsJson(storage.GetKeys((string) p.aggregate));
+            Get["/{aggregate}"] = p => Response.AsJson(DB.GetKeys((string) p.aggregate));
         }
 
         private string GetEventData(Stream stream)
