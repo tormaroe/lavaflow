@@ -16,7 +16,7 @@ namespace LavaFlow.WebHandlers
         private static readonly LogWriter Logger = HostLogger.Get(typeof(EventApiHandler));
         private readonly StorageActor _storage;
 
-        public EventApiHandler(StorageActor storage) : base("events")
+        public EventApiHandler(DB db, StorageActor storage) : base("events")
         {
             _storage = storage;
 
@@ -46,15 +46,15 @@ namespace LavaFlow.WebHandlers
             };
 
             Get["/{aggregate}/{key}"] = p =>
-                Response.FromStream(DB.GetEventStream(new PersistEvent
+                Response.FromStream(db.GetEventStream(new PersistEvent
                 {
                     AggregateType = p.aggregate,
                     AggregateKey = p.key,
                 }), "text/plain");
 
-            Get["/"] = _ => Response.AsJson(DB.GetAllAggregates());
+            Get["/"] = _ => Response.AsJson(db.GetAllAggregates());
 
-            Get["/{aggregate}"] = p => Response.AsJson(DB.GetKeys((string) p.aggregate));
+            Get["/{aggregate}"] = p => Response.AsJson(db.GetKeys((string) p.aggregate));
         }
 
         private string GetEventData(Stream stream)

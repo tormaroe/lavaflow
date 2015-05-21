@@ -1,7 +1,7 @@
 ﻿using LavaFlow.Model;
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,35 +9,44 @@ using Topshelf.Logging;
 
 namespace LavaFlow.Storage
 {
-    public static class DB
+    public class DB
     {
         private static readonly LogWriter Logger = HostLogger.Get(typeof(DB));
 
         public const string NewLine = "\n";
+        
+        private readonly IFileSystem io;
+        private readonly StoragePath _storagePath;
 
-        public static Func<Stream> GetEventStream(PersistEvent @event)
+        public DB(IFileSystem fileSystem, StoragePath storagePath)
         {
-            var filePath = Path.Combine(StoragePath.Get(@event), @event.Filename);
-            Logger.DebugFormat("Preparing stream from {0}", filePath);
-            return () => File.OpenRead(filePath);
+            io = fileSystem;
+            _storagePath = storagePath;
         }
 
-        public static IEnumerable<string> GetAllAggregates()
+        public Func<System.IO.Stream> GetEventStream(PersistEvent @event)
         {
-            return new DirectoryInfo(AppSettings.DataPath)
+            var filePath = io.Path.Combine(_storagePath.Get(@event), @event.Filename);
+            Logger.DebugFormat("Preparing stream from {0}", filePath);
+            return () => io.File.OpenRead(filePath);
+        }
+
+        public IEnumerable<string> GetAllAggregates()
+        {
+            return io.DirectoryInfo.FromDirectoryName(_storagePath.Root)
                 .GetDirectories()
                 .Select(di => di.Name);
         }
 
-        public static IEnumerable<string> GetKeys(string aggregate)
+        public IEnumerable<string> GetKeys(string aggregate)
         {
             try
             {
-                return new DirectoryInfo(Path.Combine(AppSettings.DataPath, aggregate))
-                    .GetFiles("*.events", SearchOption.AllDirectories)
-                    .Select(di => Path.GetFileNameWithoutExtension(di.Name));
+                return io.DirectoryInfo.FromDirectoryName(io.Path.Combine(_storagePath.Root, aggregate))
+                    .GetFiles("*.events", System.IO.SearchOption.AllDirectories)
+                    .Select(di => io.Path.GetFileNameWithoutExtension(di.Name));
             }
-            catch (DirectoryNotFoundException)
+            catch (System.IO.DirectoryNotFoundException)
             {
                 Logger.WarnFormat("Aggregate {0} does not exist, returning 0 keys", aggregate);
                 return new string[] { };

@@ -15,11 +15,13 @@ namespace LavaFlow
     {
         private static readonly LogWriter Logger = HostLogger.Get(typeof(Daemon));
 
-        private StorageActor _storage;
+        private readonly StorageActor _storage;
+        private readonly StoragePath _storagePath;
 
-        public Daemon(StorageActor storage)
+        public Daemon(StorageActor storage, StoragePath storagePath)
         {
             _storage = storage;
+            _storagePath = storagePath;
         }
 
         private void LogHeader()
@@ -44,7 +46,7 @@ namespace LavaFlow
 ",
                 Assembly.GetExecutingAssembly().GetName().Version,
                 AppSettings.Port,
-                AppSettings.DataPath,
+                _storagePath.Root,
                 AppSettings.StorageQueueLimit);
         }
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -7,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using LavaFlow.Model;
 using Topshelf.Logging;
+using System.IO.Abstractions;
 
 namespace LavaFlow.Storage
 {
@@ -14,10 +14,14 @@ namespace LavaFlow.Storage
     {
         private static readonly LogWriter Logger = HostLogger.Get(typeof(StorageActor));
         private readonly BlockingCollection<PersistEvent> _persistQueue;
+        private readonly IFileSystem io;
+        private readonly StoragePath _storagePath;
         private bool _stopped = false;
 
-        public StorageActor(int capacity)
+        public StorageActor(int capacity, IFileSystem fileSystem, StoragePath storagePath)
         {
+            io = fileSystem;
+            _storagePath = storagePath;
             _persistQueue = new BlockingCollection<PersistEvent>(boundedCapacity: capacity);
 
             Logger.Info("Storage actor starting");
@@ -53,8 +57,8 @@ namespace LavaFlow.Storage
                 try
                 {
                     var eventToPersist = _persistQueue.Take(); // Blocks if no items to take
-                    var path = StoragePath.Get(eventToPersist);
-                    var filepath = Path.Combine(path, eventToPersist.Filename);
+                    var path = _storagePath.Get(eventToPersist);
+                    var filepath = io.Path.Combine(path, eventToPersist.Filename);
                     Logger.DebugFormat("Storing event to <{0}:{1}> length={2}",
                         eventToPersist.AggregateType,
                         eventToPersist.AggregateKey,
@@ -62,13 +66,13 @@ namespace LavaFlow.Storage
                         filepath);
                     try
                     {
-                        if (!Directory.Exists(path))
+                        if (!io.Directory.Exists(path))
                         {
                             Logger.DebugFormat("Creating new path {0}", path);
-                            Directory.CreateDirectory(path);
+                            io.Directory.CreateDirectory(path);
                         }
 
-                        File.AppendAllText(filepath, eventToPersist.EventData + DB.NewLine);
+                        io.File.AppendAllText(filepath, eventToPersist.EventData + DB.NewLine);
                     }
                     catch (Exception ex)
                     {

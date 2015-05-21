@@ -58,7 +58,8 @@ namespace LavaFlow.Test.ClientTests
                 db_keys.Should().Contain("key_two");
 
                 // Eventual consistency ... so what is the value of eventual?
-                Thread.Sleep(200);
+                // CHANGED FROM 200 to 300 when introducing System.IO.Abstractions :(
+                Thread.Sleep(300);
 
                 db_events = client.GetEventsAsync(test_aggregate, "key_two").Result;
                 db_events.Should().HaveCount(100);

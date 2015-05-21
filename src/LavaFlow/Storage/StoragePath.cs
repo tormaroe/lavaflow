@@ -1,5 +1,5 @@
 ﻿using LavaFlow.Model;
-using System.IO;
+using System.IO.Abstractions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,22 +8,39 @@ using System;
 
 namespace LavaFlow.Storage
 {
-    public static class StoragePath
+    public class StoragePath
     {
-        public static string Get(PersistEvent @event)
+        private readonly IFileSystem io;
+        private readonly AppSettingDataPath _root;
+
+        public StoragePath(IFileSystem fileSystem, AppSettingDataPath root)
         {
-            return Path.Combine(GetFolders(@event).ToArray());
+            io = fileSystem;
+            _root = root;
         }
 
-        private static IEnumerable<string> GetFolders(PersistEvent @event)
+        public string Root
         {
-            yield return AppSettings.DataPath;
+            get
+            {
+                return _root.Value;
+            }
+        }
+
+        public string Get(PersistEvent @event)
+        {
+            return io.Path.Combine(GetFolders(@event).ToArray());
+        }
+
+        private IEnumerable<string> GetFolders(PersistEvent @event)
+        {
+            yield return _root.Value;
             yield return @event.AggregateType;
-            foreach (var item in @event.AggregateKey.SplitByLength(@event.AggregateKey.Length / 4))
+            foreach (var item in SplitByLength(@event.AggregateKey, @event.AggregateKey.Length / 4))
                 yield return item;
         }
 
-        private static IEnumerable<string> SplitByLength(this string str, int maxLength)
+        private static IEnumerable<string> SplitByLength(string str, int maxLength)
         {
             if (maxLength < 1)
                 maxLength = 1;

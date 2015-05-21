@@ -5,37 +5,41 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Topshelf.Logging;
+using System.IO.Abstractions;
 
 namespace LavaFlow
 {
-    public static class AppSettings
+    public class AppSettingDataPath
     {
-        private static readonly LogWriter Logger = HostLogger.Get(typeof(AppSettings));
-        private static string _dataPath;
-        private static object _padlock = new object();
-
-        public static string DataPath
+        private static readonly LogWriter Logger = HostLogger.Get(typeof(AppSettingDataPath));
+        private readonly IFileSystem io;
+        private readonly string _value;
+        
+        public AppSettingDataPath(IFileSystem fileSystem)
         {
-            get
+            io = fileSystem;
+
+            _value = ConfigurationManager.AppSettings["DataPath"];
+
+            if (!io.Directory.Exists(_value))
             {
-                if (_dataPath != null)
-                    return _dataPath;
-
-                lock (_padlock)
-                {
-                    _dataPath = ConfigurationManager.AppSettings["DataPath"];
-
-                    if (!Directory.Exists(_dataPath))
-                    {
-                        Logger.DebugFormat("Creating data root directory {0}", _dataPath);
-                        Directory.CreateDirectory(_dataPath);
-                    }
-
-                    return _dataPath;
-                }
+                Logger.DebugFormat("Creating data root directory {0}", _value);
+                io.Directory.CreateDirectory(_value);
             }
         }
 
+        public string Value
+        {
+            get
+            {
+                return _value;
+            }
+        }
+
+    }
+
+    public static class AppSettings
+    {
         public static int Port
         {
             get
