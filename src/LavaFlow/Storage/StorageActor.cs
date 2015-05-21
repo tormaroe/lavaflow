@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using LavaFlow.Model;
 using Topshelf.Logging;
 using System.IO.Abstractions;
+using System.Numerics;
 
 namespace LavaFlow.Storage
 {
@@ -17,6 +18,7 @@ namespace LavaFlow.Storage
         private readonly IFileSystem io;
         private readonly StoragePath _storagePath;
         private bool _stopped = false;
+        private long _storedCount;
 
         public StorageActor(int capacity, IFileSystem fileSystem, StoragePath storagePath)
         {
@@ -48,6 +50,13 @@ namespace LavaFlow.Storage
                 return _persistQueue.Count;
             }
         }
+        public long StoredCount
+        {
+            get
+            {
+                return _storedCount;
+            }
+        }
 
         public void ProcessEvents()
         {
@@ -73,6 +82,7 @@ namespace LavaFlow.Storage
                         }
 
                         io.File.AppendAllText(filepath, eventToPersist.EventData + DB.NewLine);
+                        _storedCount++;
                     }
                     catch (Exception ex)
                     {

@@ -36,6 +36,16 @@ namespace LavaFlow
             }
         }
 
+        public long SizeOnDisk
+        {
+            get
+            {
+                var info = io.DirectoryInfo.FromDirectoryName(_value);
+                return info
+                    .EnumerateFiles("*", SearchOption.AllDirectories)
+                    .Sum(fi => fi.Length);
+            }
+        }
     }
 
     public static class AppSettings

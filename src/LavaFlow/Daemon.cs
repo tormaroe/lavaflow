@@ -44,7 +44,7 @@ namespace LavaFlow
          DataPath          :  {2}
          StorageQueueLimit :  {3}
 ",
-                Assembly.GetExecutingAssembly().GetName().Version,
+                Program.VERSION,
                 AppSettings.Port,
                 _storagePath.Root,
                 AppSettings.StorageQueueLimit);
