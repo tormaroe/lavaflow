@@ -13,7 +13,7 @@ namespace LavaFlow.Test.ClientTests
     public class IntegrationTests
     {
         [Test]
-        [Ignore("Need to make this runnable with in-process and in-memory server")]
+        //[Ignore("Need to make this runnable with in-process and in-memory server")]
         public void Run()
         {
             using (var client = new LavaFlowClient("localhost"))

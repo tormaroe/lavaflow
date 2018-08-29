@@ -19,6 +19,7 @@ namespace LavaFlow.Storage
         private readonly StoragePath _storagePath;
         private bool _stopped = false;
         private long _storedCount;
+        private long _errorCount;
 
         public StorageActor(int capacity, IFileSystem fileSystem, StoragePath storagePath)
         {
@@ -57,6 +58,13 @@ namespace LavaFlow.Storage
                 return _storedCount;
             }
         }
+        public long ErrorCount
+        {
+            get
+            {
+                return _errorCount;
+            }
+        }
 
         public void ProcessEvents()
         {
@@ -86,6 +94,7 @@ namespace LavaFlow.Storage
                     }
                     catch (Exception ex)
                     {
+                        _errorCount++;
                         Logger.Error(String.Format("Exception in persistance loop, event <{0}:{1}> lost", 
                             eventToPersist.AggregateType, 
                             eventToPersist.AggregateKey), ex);
@@ -94,6 +103,7 @@ namespace LavaFlow.Storage
                 }
                 catch (Exception ex)
                 {
+                    _errorCount++;
                     Logger.Error("Exception in persistance loop", ex);
                 }
             }

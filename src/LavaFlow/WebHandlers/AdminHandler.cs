@@ -22,6 +22,7 @@ namespace LavaFlow.WebHandlers
                         server_time = DateTime.UtcNow,
                         up_time = DateTime.UtcNow - Program.STARTED,
                         stored_count_since_start = storage.StoredCount,
+                        storage_error_count = storage.ErrorCount,
                     },
                     storage = new
                     {
